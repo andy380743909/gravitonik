@@ -4,6 +4,13 @@ love.filesystem.load("functions.lua")()
 anim8 = require 'anim8/anim8'
 love.filesystem.setIdentity("gravitonik")
 
+baton = require "lib.baton"
+input = require 'input'
+
+-- if love.system.getOS() == "NX" then
+-- joystick = love.joystick.getJoysticks()[2]
+local buttonIndex
+
 function love.load()
   files = {}
   filematch = {}
@@ -214,6 +221,7 @@ function love.load()
 end
 
 function love.update(dt)
+  input:update()
   if menu then update_menus(dt)
   else update_level(dt)
   end
@@ -223,14 +231,18 @@ function love.update(dt)
 end
 
 function love.draw()
-  love.graphics.setColor(255, 255, 255)
+  --love.graphics.setColorMode("replace")
+  love.graphics.setBlendMode("alpha")
   drawbg()
 
-  love.graphics.setColor(255, 255, 255)
+  --love.graphics.setColorMode("modulate")
+  --love.graphics.setBlendMode("multiply")
+
   love.graphics.draw(smoke, -cam_x, -cam_y)
   love.graphics.draw(jet, -cam_x, -cam_y)
 
-  love.graphics.setColor(255, 255, 255)
+  --love.graphics.setColorMode("replace")
+  love.graphics.setBlendMode("alpha")
   for j = 1, numplanets, 1 do
     if p_style ~= 0 then love.graphics.draw(planet[p_style[j]], p_pos_x[j] - cam_x, p_pos_y[j] - cam_y, p_ang[j], p_rad[j] / 256, p_rad[j] / 256, 512, 512) end
     if thisplanet == j and dead == false and runspeed ~= 0 then
@@ -247,9 +259,14 @@ function love.draw()
 
   if menu then								-- Menu screens
     draw_menus()
+
+    -- love.graphics.print(joystick:getName(), 100, 20)
+    -- if buttonIndex ~= nil then
+		-- 	love.graphics.print(tostring(buttonIndex), 100, 34)
+		-- end
   else
     if thispart > 0 and thispart <= numparts and part_visible[thispart] then
-      love.graphics.setColor(255, 255, 255)
+      -- love.graphics.setColorMode("replace")
       love.graphics.draw(glow, part_pos_x[thispart] - cam_x, part_pos_y[thispart] - cam_y, 0, 0.18 + 0.02 * math.sin(10 * love.timer.getTime()), 0.18 + 0.02 * math.sin(10 * love.timer.getTime()), 128, 128)
       love.graphics.draw(part[part_style[thispart]], part_pos_x[thispart] - cam_x, part_pos_y[thispart] - cam_y, part_ang[thispart] + p_ang[part_planet[thispart]], 0.125, 0.125, 128, 128)
       if dead == false and part_visible[thispart] then draw_arrow(part_pos_x[thispart], part_pos_y[thispart]) end
@@ -257,13 +274,13 @@ function love.draw()
 
     for i = 1, fuel_bottles, 1 do
       if fuel_remaining[i] then
-      love.graphics.setColor(255, 255, 255)
+      -- love.graphics.setColorMode("replace")
         love.graphics.draw(glow, fuel_pos_x[i] - cam_x, fuel_pos_y[i] - cam_y, 0, 0.18 + 0.02 * math.sin(10 * love.timer.getTime()), 0.18 + 0.02 * math.sin(10 * love.timer.getTime()), 128, 128)
         love.graphics.draw(bottle, fuel_pos_x[i] - cam_x, fuel_pos_y[i] - cam_y, fuel_ang[i], 0.125, 0.125, 128, 128)
       end
     end
 
-    -- OSD
+    -- love.graphics.setColorMode("replace")				-- OSD
     love.graphics.setColor(255, 255, 255, 255)
     love.graphics.draw(flame, 30, love.graphics.getHeight() - 35, 0, 1, 1, 16, 16)
     love.graphics.line(50, love.graphics.getHeight() - 35, 50, love.graphics.getHeight() - 25)
@@ -273,21 +290,21 @@ function love.draw()
     love.graphics.draw(particon, love.graphics.getWidth() - 80, love.graphics.getHeight() - 35, 0, 1, 1, 16, 16)
     love.graphics.setFont(textfont)
     love.graphics.print(numparts - thispart + 1, love.graphics.getWidth() - 60, love.graphics.getHeight() - 50)
-
+    
+    -- love.graphics.setColorMode("modulate")
     love.graphics.draw(blood, -cam_x, -cam_y)
     love.graphics.draw(expsmoke, -cam_x, -cam_y)
     love.graphics.draw(explosion, -cam_x, -cam_y)
 
+    -- love.graphics.setColorMode("replace")
     if paused then
       love.graphics.setColor(0, 0, 0, 127)
       love.graphics.rectangle("fill", -5, -5, love.graphics.getWidth() + 10, love.graphics.getHeight() + 10)
-      love.graphics.setColor(255, 255, 255)
       love.graphics.setFont(menufont)
       love.graphics.print("Paused", love.graphics.getWidth() / 2 - 70, 200)
     elseif level_finished then
       love.graphics.setColor(0, 0, 0, 127)
       love.graphics.rectangle("fill", -5, -5, love.graphics.getWidth() + 10, love.graphics.getHeight() + 10)
-      love.graphics.setColor(255, 255, 255)
       if love.timer.getTime() - lev_finish_time > 1 then
         love.graphics.setFont(menufont)
         love.graphics.print("Level finished", love.graphics.getWidth() / 2 - 130, 200)
@@ -301,7 +318,6 @@ function love.draw()
       love.graphics.setColor(0, 0, 0, 127)
       love.graphics.rectangle("fill", -5, -5, love.graphics.getWidth() + 10, love.graphics.getHeight() + 10)
       if love.timer.getTime() - lev_finish_time > 1 then
-        love.graphics.setColor(255, 255, 255)
         love.graphics.setFont(menufont)
         love.graphics.print("Dead", love.graphics.getWidth() / 2 - 40, 200)
         love.graphics.print("Time: " .. display_time(leveltime), 400, 400)
@@ -309,7 +325,7 @@ function love.draw()
     end
   end
   -- Debug stuff
-  --love.graphics.setColor(255, 255, 255, 255)
+  --love.graphics.setColorMode("replace")
   --love.graphics.setFont(textfont)
   --love.graphics.print("visible", 40, 40)
 end
@@ -326,17 +342,15 @@ function love.keypressed(k, u)
       elseif k == " " or k == "return" then
         change_menu(mm_opt_val[mm_selected])
       elseif k == "escape" then
-        love.event.push("quit")
+        love.event.push("q")
       end
     elseif menu_screen == 2 then			-- New game screen
-      if string.match(k, '^[rl]shift$') then
-        return
-      elseif table.maxn(name_table) and string.match(k, '^[a-z0-9%-_]$') then
-        if ((love.keyboard.isDown('lshift') or love.keyboard.isDown('lshift')) and string.match(k, '^[a-z]$')) then
-          k = string.upper(k)
-        end
-        table.insert(name_table, k)
-      elseif k == "backspace" then
+    local v = love.keyboard.getKeyFromScancode(u)
+    function isAlphaNumericUnderscoreHyphen(str)
+      return string.match(str, "[%w_-]")
+    end
+      
+      if k == "backspace" then
         table.remove(name_table)
       elseif k == "return" then
         if table.maxn(name_table) == 0 then
@@ -351,6 +365,8 @@ function love.keypressed(k, u)
         end
       elseif k == "escape" then
         change_menu(1)
+      elseif table.maxn(name_table) < 20 and isAlphaNumericUnderscoreHyphen(u) then
+        table.insert(name_table, u)
       end
       name = table.concat(name_table)
     elseif menu_screen == 3 then			-- Load game screen
@@ -456,4 +472,187 @@ function love.keyreleased(k)
 end
 
 function update_level(dt)
+end
+
+function love.gamepadpressed(joystick, button)
+-- function love.keypressed(k, u)
+   local k = ""
+    if joystick:isGamepadDown("dpleft") then
+        k = "left"
+    elseif joystick:isGamepadDown("dpright") then
+        k = "right"
+    end
+
+    if joystick:isGamepadDown("dpup") then
+        k = "up"
+    elseif joystick:isGamepadDown("dpdown") then
+        k= "down"
+    end
+    
+    if joystick:isGamepadDown("a") then
+        k = "return"
+    elseif joystick:isGamepadDown("b") then
+        k= "escape"
+    end
+
+  buttonIndex = button
+
+  if menu and changescreen == false then				-- Process input at menus
+    if menu_screen == 1 then				-- Main menu
+      if k == "up" then
+        mm_selected = mm_selected - 1
+        if mm_selected == 0 then mm_selected = mm_options end
+      elseif k == "down" then
+        mm_selected = mm_selected + 1
+        if mm_selected == mm_options + 1 then mm_selected = 1 end
+      elseif k == " " or k == "return" then
+        change_menu(mm_opt_val[mm_selected])
+      elseif k == "escape" then
+        love.event.push("q")
+      end
+    elseif menu_screen == 2 then			-- New game screen
+    --local v = love.keyboard.getKeyFromScancode(u)
+    function isAlphaNumericUnderscoreHyphen(str)
+      return string.match(str, "[%w_-]")
+    end
+    local u = tostring(button)
+      if k == "backspace" then
+        table.remove(name_table)
+      elseif k == "return" then
+        if table.maxn(name_table) == 0 then
+          name_error = "Name must contain at least one character"
+        elseif love.filesystem.exists("save/" .. name .. ".grvsv.lua") then
+          name_error = "Name already taken"
+        elseif new_savefile(name) then
+          refresh_saves()
+          change_menu(4)
+        else
+          name_error = "Error: Could not write save file"
+        end
+      elseif k == "escape" then
+        change_menu(1)
+      elseif table.maxn(name_table) < 20 and isAlphaNumericUnderscoreHyphen(u) then
+        table.insert(name_table, u)
+      end
+      name = table.concat(name_table)
+    elseif menu_screen == 3 then			-- Load game screen
+      if k == "up" then
+        lm_selected = lm_selected - 1
+        if lm_selected == 0 then lm_selected = lm_options end
+      elseif k == "down" then
+        lm_selected = lm_selected + 1
+        if lm_selected == lm_options + 1 then lm_selected = 1 end
+      elseif k == " " or k == "return" then
+        load_savefile(lm_option[lm_selected])
+        change_menu(4)
+      elseif k == "escape" then
+        change_menu(1)
+      end
+    elseif menu_screen == 4 then			-- Select level screen
+      if k == "up" then
+        lev_selected = lev_selected - 1
+        if lev_selected == 0 then lev_selected = uptolevel end
+      elseif k == "down" then
+        lev_selected = lev_selected + 1
+        if lev_selected == uptolevel + 1 then lev_selected = 1 end
+      elseif k == " " or k == "return" then
+        if lev_opt_val[lev_selected] == 0 then
+        else
+          load_level(lev_opt_val[lev_selected])
+        end
+      elseif k == "escape" then
+        change_menu(1)
+      end
+    elseif menu_screen == 5 then			-- How to play screen
+      if k == " " or k == "return" then
+        change_menu(1)
+      elseif k == "escape" then
+        change_menu(1)
+      end
+    end
+  elseif level_finished then				-- Level finished
+    if love.timer.getTime() - lev_finish_time > 1 and (k == " " or k == "return" or k == "escape") then
+      init_menu()
+      write_savefile(name)
+      menu = true
+      level_finished = false
+      dead = false
+      cam_x = cam_n_x[4]
+      cam_y = cam_n_y[4]
+      change_menu(4)
+    end
+  elseif dead then					-- Player dead
+    if love.timer.getTime() - lev_finish_time > 1 and (k == " " or k == "return" or k == "escape") then
+      init_menu()
+      menu = true
+      level_finished = false
+      dead = false
+      cam_x = cam_n_x[4]
+      cam_y = cam_n_y[4]
+      change_menu(4)
+    end
+  elseif menu == false then				-- Gameplay
+    if paused then
+      if k == "return" or k == " " or k == "escape" or k == "kpenter" or k == "p" then
+        paused = false
+      end
+    elseif k == "p" then
+      paused = true
+    elseif k == "f5" then
+      load_level(thislevel)
+    elseif k == "up" then
+      if thisplanet ~= 0 then						-- Jump off planet
+        can_jump = true
+        for i = 1, numplanets, 1 do
+          dist = math.sqrt((p_pos_x[i] - sm_pos_x)^2 + (p_pos_y[i] - sm_pos_y)^2)
+          if i ~= thisplanet and dist <= p_rad[i] + 25 then can_jump = false end
+        end
+        if can_jump then
+          sm_pos_x = p_pos_x[thisplanet] + (p_rad[thisplanet] + 35) * math.cos(lat)
+          sm_pos_y = p_pos_y[thisplanet] + (p_rad[thisplanet] + 35) * math.sin(lat)
+          sm_v_x = (runspeed + p_angv[thisplanet] * p_rad[thisplanet]) * math.cos(runangle) + 200 * math.cos(lat) + p_v_x[thisplanet]
+          sm_v_y = (runspeed + p_angv[thisplanet] * p_rad[thisplanet]) * math.sin(runangle) + 200 * math.sin(lat) + p_v_y[thisplanet]
+          sm_angv = runspeed / p_rad[thisplanet] + p_angv[thisplanet]
+          thisplanet = 0
+        end
+      elseif thisplanet == 0 and fuel > 0 then
+        jet:start()
+        smoke:start()
+        rocket = true
+      end
+    elseif k == "escape" then
+      init_menu()
+      menu = true
+      cam_x = cam_n_x[4]
+      cam_y = cam_n_y[4]
+      change_menu(4)
+    end
+  end
+end
+
+function love.joystickreleased( joystick, button )
+--function love.keyreleased(k)
+	local k = ""
+    if joystick:isGamepadDown("dpleft") then
+        k = "left"
+    elseif joystick:isGamepadDown("dpright") then
+        k = "right"
+    end
+
+    if joystick:isGamepadDown("dpup") then
+        k = "up"
+    elseif joystick:isGamepadDown("dpdown") then
+        k= "down"
+    end
+    
+    if joystick:isGamepadDown("a") then
+        k = "return"
+    elseif joystick:isGamepadDown("b") then
+        k= "escape"
+    end
+
+  if k == "up" and paused == false then
+    jet:stop()
+    smoke:stop()
+  end
 end

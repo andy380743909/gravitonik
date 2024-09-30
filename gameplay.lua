@@ -11,6 +11,16 @@ function update_gameplay(dt)
   explosion:update(dt)
   expsmoke:update(dt)
 
+		-- local rightPressed = (love.keyboard.isDown("right") or joystick:isGamepadDown("dpright"))
+		-- local leftPressed = (love.keyboard.isDown("left") or joystick:isGamepadDown("dpleft"))
+		-- local downPressed = (love.keyboard.isDown("down") or joystick:isGamepadDown("dpdown"))
+		-- local upPressed = (love.keyboard.isDown("up") or joystick:isGamepadDown("dpup"))
+
+  local rightPressed = input:down 'right'
+  local leftPressed = input:down 'left'
+  local downPressed = input:down 'down'
+  local upPressed = input:down 'up'
+
   mt2 = love.timer.getTime()
   if level_loaded then
     for i = 1, numplanets, 1 do
@@ -57,14 +67,29 @@ function update_gameplay(dt)
 
     cam_x = cam_x + ((sm_pos_x - love.graphics.getWidth()/2  - cam_x) * 2 + sm_v_x) * dt
     cam_y = cam_y + ((sm_pos_y - love.graphics.getHeight()/2 - cam_y) * 2 + sm_v_y) * dt
-    if love.keyboard.isDown("right") and menu == false and level_finished == false then sm_angv = sm_angv + 40 * dt
-    elseif love.keyboard.isDown("left") and menu == false and level_finished == false then sm_angv = sm_angv - 40 * dt
-    elseif love.keyboard.isDown("down") then
+    
+		-- local rightPressed = (love.keyboard.isDown("right") or joystick:isGamepadDown("dpright"))
+		-- local leftPressed = (love.keyboard.isDown("left") or joystick:isGamepadDown("dpleft"))
+		-- local downPressed = (love.keyboard.isDown("down") or joystick:isGamepadDown("dpdown"))
+		-- local upPressed = (love.keyboard.isDown("up") or joystick:isGamepadDown("dpup"))
+
+  local rightPressed = input:down 'right'
+  local leftPressed = input:down 'left'
+  local downPressed = input:down 'down'
+  local upPressed = input:down 'up'
+
+    if rightPressed and menu == false and level_finished == false then sm_angv = sm_angv + 40 * dt
+    elseif leftPressed and menu == false and level_finished == false then sm_angv = sm_angv - 40 * dt
+    elseif downPressed then
       if sm_angv > 0 then sm_angv = sm_angv - 20 * dt
       elseif sm_angv < 0 then sm_angv = sm_angv + 20 * dt
       end
       if math.abs(sm_angv) < 1 then sm_angv = 0 end
     end
+
+
+
+
     if sm_angv > 5 then sm_angv = 5 end
     if sm_angv < -5 then sm_angv = -5 end
     sm_ang = sm_ang + sm_angv * dt
@@ -134,12 +159,12 @@ function update_gameplay(dt)
         force = (G * p_mass[i] * sm_mass) / dist^2
         dir_x = (p_pos_x[i] - sm_pos_x) / dist
         dir_y = (p_pos_y[i] - sm_pos_y) / dist
-        force_x = force_x + force * dir_x - 0.0002 * sm_v_x
+        force_x = force_x + force * dir_x - 0.0002 * sm_v_x 
         force_y = force_y + force * dir_y - 0.0002 * sm_v_y
       end
     end
 
-    if rocket and love.keyboard.isDown("up") and fuel > 0 then
+    if rocket and upPressed and fuel > 0 then
       rocket_on = true
       force_x = force_x + 5 * math.sin(sm_ang)
       force_y = force_y - 5 * math.cos(sm_ang)
@@ -187,12 +212,15 @@ function update_gameplay(dt)
     end
     rel_lat = fix_angle(rel_lat)
     lat = fix_angle(lat)
-    if love.keyboard.isDown("right") and menu == false and level_finished == false then
+
+
+
+    if rightPressed and menu == false and level_finished == false then
       sm_orient = 1
       if runspeed < 0 then runspeed = runspeed + 500 * dt
       else runspeed = runspeed + 200 * dt
       end
-    elseif love.keyboard.isDown("left") and menu == false and level_finished == false then
+    elseif leftPressed and menu == false and level_finished == false then
       sm_orient = -1
       if runspeed > 0 then runspeed = runspeed - 500 * dt
       else runspeed = runspeed - 200 * dt

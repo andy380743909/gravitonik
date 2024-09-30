@@ -52,6 +52,7 @@ function draw_arrow(t_x, t_y)
   t_dist = math.sqrt((t_x - cam_x - love.graphics.getWidth()/2)^2 + (t_y - cam_y - love.graphics.getHeight()/2)^2)
   t_ang = math.atan2(t_y - cam_y - love.graphics.getHeight()/2, t_x - cam_x - love.graphics.getWidth()/2)
   if t_dist > love.graphics.getHeight() / 2 then
+    -- love.graphics.setColorMode("modulate")
     love.graphics.setColor(255 * math.exp(-(t_dist - love.graphics.getHeight()/2) / 8000), 0, 255 - 255 * math.exp(-(t_dist - love.graphics.getHeight()/2) / 5000), 127 - 127 * math.exp(-(t_dist - love.graphics.getHeight()/2) / 100))
     love.graphics.draw(arrow, love.graphics.getWidth()/2 + 300 * math.cos(t_ang), love.graphics.getHeight()/2  + 300 * math.sin(t_ang), t_ang + math.pi/2, 0.25, 0.25, 128, 128)
   end
