@@ -342,7 +342,8 @@ function love.keypressed(k, u)
       elseif k == " " or k == "return" then
         change_menu(mm_opt_val[mm_selected])
       elseif k == "escape" then
-        love.event.push("q")
+        --love.event.push("q")
+        love.event.quit()
       end
     elseif menu_screen == 2 then			-- New game screen
     local v = love.keyboard.getKeyFromScancode(u)
